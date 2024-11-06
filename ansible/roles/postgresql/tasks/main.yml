@@ -1,0 +1,23 @@
+---
+- name: Ensure Python 3 and necessary packages are installed
+  package:
+    name: 
+      - python3
+      - python3-psycopg2
+    state: present
+
+- name: Create semaphore database
+  command: "sudo -u {{ db_user }} psql -c \"CREATE DATABASE {{ semaphore_db_name }};\""
+  register: db_creation_result
+  failed_when: false  # Убедимся, что задача не завершается неудачно при возврате успешного кода (0)
+  changed_when: "'CREATE DATABASE' in db_creation_result.stdout and 'already exists' not in db_creation_result.stdout"
+
+- name: Create semaphore DB user with privileges
+  command: "sudo -u {{ db_user }} psql -c \"CREATE USER {{ semaphore_db_user }} WITH PASSWORD '{{ semaphore_db_password }}';\""
+  register: user_creation_result
+  failed_when: false  # Убедимся, что задача не завершается неудачно при возврате успешного кода (0)
+  changed_when: "'CREATE ROLE' in user_creation_result.stdout and 'already exists' not in user_creation_result.stdout"  
+
+- name: Grant privileges to semaphore DB user
+  command: "sudo -u {{ db_user }} psql -c \"GRANT ALL PRIVILEGES ON DATABASE {{ semaphore_db_name }} TO {{ semaphore_db_user }};\""
+  changed_when: false

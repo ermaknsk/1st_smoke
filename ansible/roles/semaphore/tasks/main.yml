@@ -1,0 +1,63 @@
+---
+- name: Add semaphore user
+  ansible.builtin.user:
+    name: "{{ semaphore_user }}"
+    createhome: false
+
+- name: Create application directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ semaphore_user }}"
+    group: "{{ semaphore_user }}"
+    mode: 0755
+  with_items:
+    - "{{ semaphore_path }}"
+    - "{{ semaphore_config_path | dirname }}"
+    - "{{ semaphore_tmp_path }}"
+    - "{{ semaphore_version_dir }}"
+
+- name: Install required packages on Ubuntu
+  apt:
+    name: 
+      - wget
+    state: present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Download Semaphore .deb on Ubuntu
+  get_url:
+    url: https://github.com/semaphoreui/semaphore/releases/download/{{ semaphore_version }}/semaphore_{{ semaphore_version[1:] }}_linux_amd64.deb
+
+    dest: /tmp/semaphore.deb
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install Semaphore on Ubuntu using dpkg
+  shell: |
+    dpkg -i /tmp/semaphore.deb || apt-get install -f -y
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install required packages on CentOS
+  yum:
+    name: 
+      - wget
+    state: present
+  when: ansible_distribution == 'CentOS'
+
+- name: Download Semaphore .rpm on CentOS
+  get_url:
+    url: https://github.com/semaphoreui/semaphore/releases/download/{{ semaphore_version }}/semaphore_{{ semaphore_version[1:] }}_linux_amd64.rpm
+
+    dest: /tmp/semaphore.rpm
+  when: ansible_distribution == 'CentOS'
+
+- name: Install Semaphore on CentOS
+  yum:
+    name: /tmp/semaphore.rpm
+    state: present
+  when: ansible_distribution == 'CentOS'
+
+- name: Create semaphore config
+  template:
+    src: semaphore_config.json.j2
+    dest: "{{ semaphore_config_path }}"
+  notify: Restart semaphore

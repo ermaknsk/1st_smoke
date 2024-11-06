@@ -1,0 +1,14 @@
+---
+- name: Deploy systemd service file
+  ansible.builtin.template:
+    src: "semaphore.service.j2"
+    dest: "{{ semaphore_systemd_unit_path }}"
+    mode: 0644
+  notify:
+    - Semaphore restart
+
+- name: Service start
+  ansible.builtin.systemd:
+    name: "{{ semaphore_identifier }}"
+    state: "started"
+    enabled: true

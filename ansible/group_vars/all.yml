@@ -1,0 +1,23 @@
+---
+db_user: "postgres"  # Измените по необходимости
+semaphore_version: "v2.10.35"
+semaphore_port: 3000
+semaphore_db_user: "semaphore"
+semaphore_db_password: "semaphorepass"
+semaphore_db_name: "semaphoredb"
+haproxy_backend_ports: [3000, 3001]
+haproxy_frontend_port: 80
+semaphore_user: "semaphore"
+semaphore_path: "/opt/semaphore"
+semaphore_config_path: "/etc/semaphore/config.json"
+semaphore_tmp_path: "{{ semaphore_path }}/tmp"
+semaphore_executable: "{{ semaphore_path }}/semaphore"
+semaphore_command: "{{ semaphore_executable }} --config {{ semaphore_config_path | quote }}"
+semaphore_version_dir: "{{ semaphore_executable }}_{{ semaphore_version }}"
+semaphore_identifier: "{{ semaphore_user }}"
+semaphore_systemd_unit_path: "/etc/systemd/system/{{ semaphore_identifier }}.service"
+
+semaphore_default_user: "admin"
+semaphore_default_user_name: "admin"
+semaphore_default_user_password: "admin"
+semaphore_default_user_mail: "admin@slurm.com"

@@ -1,0 +1,12 @@
+---
+- hosts: all
+  become: true
+  ignore_unreachable: true
+  become_method: sudo
+  vars:
+    ansible_become_pass: "Pass" #"your_sudo_password"
+  roles:
+    - postgresql
+    - semaphore
+    - systemd
+    - haproxy
